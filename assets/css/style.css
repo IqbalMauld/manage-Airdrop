@@ -1,0 +1,323 @@
+
+    *{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0f1420;
+      color: #e4e8f0;
+      scroll-behavior: smooth;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #151b2a;
+      padding: 12px 24px;
+      border-bottom: 1px solid #2c3449;
+      position: fixed;
+      width: 100%;
+    }
+    .navbar .logo {
+      font-weight: bold;
+      font-size: 18px;
+      color: #7b5cf5;
+    }
+    .day{
+      font-size: 15px;
+      color: #2ecc71;
+      position: absolute;
+      top: 70px;
+      left: 50px;
+    }
+    .navbar .menu {
+      display: flex;
+      gap: 20px;
+    }
+    .navbar .menu a {
+      color: #c9d0e3;
+      text-decoration: none;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: 0.2s ease;
+    }
+    .navbar .menu a.active {
+      background: #2a3250;
+      color: #fff;
+    }
+
+    section{
+      padding:100px 25px ;
+    }
+    .page{
+      visibility: hidden;
+      display: none;
+       opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .page.active{
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Container */
+    .dashboard {
+      padding: 100px 24px;
+    }
+
+    .card {
+      background: #151b2a;
+      border-radius: 12px;
+      padding: 20px;
+    }
+  #rank{
+         padding: 10px 20px;
+      background: #2d4373;
+      color: #9dc0ff;
+      transition: 0.2 ease;
+      border-radius: 5px;
+      margin: 10px;
+      font-weight: bold;
+      text-decoration: none;
+  }
+#rank:hover{
+      background: none;
+      outline: 2px solid #2d4371;
+      color: #fff;
+}
+    h2 {
+      margin: 0 0 16px;
+    }
+    #start{
+      padding: 10px 15px;
+      background: #2d4373;
+      color: #9dc0ff;
+      transition: 0.2 ease;
+      border-radius: 5px;
+      margin: 10px;
+      font-weight: bold;
+    }
+    #start:hover{
+      background: none;
+      outline: 2px solid #2d4371;
+      color: #fff;
+    }
+     
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background: #1d2438;
+      color: #aeb8d8;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background: #1a2134;
+    }
+
+    tr:hover {
+      background: #242c46;
+    }
+
+    tr th:last-child{
+      display: flex;
+      justify-content: center;
+    }
+    tr td:nth-child(1){
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 5px;
+    }
+    tr td:nth-child(1) img{
+     width: 40px;
+     border-radius: 50%;
+    }
+       tr td:nth-child(1) button{
+        background:none ;
+        outline: none;
+        border: none;
+       }
+  tr td img{
+    margin-left: 10px;
+  }
+  tr td .btn-del{
+    background: none;
+    outline: none;
+    border: none;
+  }
+       /* feather color */
+svg.feather{
+  color: #fff;
+}
+.dashboard  td:nth-child(2) a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+}
+.dashboard .reminder::after {
+  content: " ❗";
+  font-size: 20px;
+  color: red;
+  font-weight: bold;
+}
+
+.dell span{
+  margin-bottom: 10px;
+}
+.dell{
+  margin-left: 20px;
+}
+.dell:hover{
+  transition: 0.3s ease;
+   color: rgb(185, 0, 0);
+   
+}
+    /* Badge & Status */
+    .badge {
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-mainnet {
+      background: #26395c;
+      color: #8fb7ff;
+    }
+
+    .badge-claim {
+      background: #2d4373;
+      color: #9dc0ff;
+      cursor: pointer;
+    }
+
+    .status-ok {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+
+    .link {
+      color: #7b5cf5;
+      text-decoration: none;
+    }
+    #Add, #galxeAdd, #randomAdd, #guildAdd, #waitlistAdd{
+      padding: 10px 15px;
+      background: #2d4373;
+      color: #9dc0ff;
+      transition: 0.2 ease;
+      border-radius: 5px;
+      margin: 10px;
+      font-weight: bold;
+    }
+    #Add:hover, #galxeAdd:hover, #randomAdd:hover, #guildAdd:hover, #waitlistAdd:hover{
+        background: none;
+        outline: 2px solid #2d4373;
+    }
+    .btn{
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 10px;
+    }
+    .form{
+        position: absolute;
+        top: 10%;
+        left: 35%;
+        display: flex;
+        width: 400px;
+        flex-direction: column;
+        background-color: #2d4373;
+        padding: 20px;
+        border-radius: 20px;
+        transform: scale(0);
+        transition: 0.5s ease;
+    }
+
+    .form.active{
+      transform: scale(1)
+    }
+
+    .form h1{
+        text-align: center;
+    }
+    .form input{
+        padding: 10px;
+        border-radius: 20px;
+        margin: 5px;
+        background-color: #26395c;
+        color: #fff;
+    }
+    .form button{
+        padding: 10px;
+        width: 30%;
+        margin: 5px;
+        border-radius: 10px;
+        background-color: #26395c;
+        color: #8fb7ff;
+    }
+    .form button:hover{
+      background: none;
+      outline: 2px solid #26395c;
+      
+    }
+
+    .form p {
+      padding: 20px;
+    }
+
+
+/* Responsive untuk HP */
+@media (max-width: 768px) {
+  .dashboard .card {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .dashboard table {
+    width: 100%;
+    display: block;  
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .dashboard table th,
+  .dashboard table td {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .dashboard h2 {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .dashboard button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
