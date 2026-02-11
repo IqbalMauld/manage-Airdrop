@@ -1,10 +1,10 @@
-// ===== START index.js (updated) =====
 const btnAdd = document.getElementById("Add");
 const btnGalxe = document.getElementById("galxeAdd");
 const btnGuild = document.getElementById("guildAdd");
 const btnAddList = document.getElementById("addList");
 const btnWaitlist = document.getElementById("waitlistAdd");
 const btnRandom = document.getElementById("randomAdd");
+const btnMonad = document.getElementById("randomNad");
 const close = document.getElementById("close");
 
 const tBodyDashboard = document.querySelector("#dashboard tbody");
@@ -12,6 +12,7 @@ const tBodyGalxe = document.querySelector("#galxe tbody");
 const tBodyWaitlist = document.querySelector("#waitlist tbody");
 const tBodyGuild = document.querySelector("#guild tbody");
 const tBodyRandom = document.querySelector("#random tbody");
+const tBodyMonad = document.querySelector("#monad tbody");
 
 const input1 = document.getElementById("1"); // project
 const input2 = document.getElementById("2"); // image
@@ -44,31 +45,33 @@ function jams() {
 
 jams()
 
-setInterval(jams, 1000); // panggil tiap 1 detik
+setInterval(jams, 1000); 
 
 
 
 let activeTable = "dashboard";
-let editingRow = null; // row yang sedang diedit
+let editingRow = null; 
 
-// helper: cari tbody yang mengandung row (robust)
 function getBodyContainingRow(row) {
   if (tBodyDashboard && tBodyDashboard.contains(row)) return tBodyDashboard;
   if (tBodyGalxe && tBodyGalxe.contains(row)) return tBodyGalxe;
   if (tBodyGuild && tBodyGuild.contains(row)) return tBodyGuild;
   if (tBodyWaitlist && tBodyWaitlist.contains(row)) return tBodyWaitlist;
   if (tBodyRandom && tBodyRandom.contains(row)) return tBodyRandom;
+  if (tBodyMonad && tBodyMonad.contains(row)) return tBodyMonad;
   return null;
 }
 
 // NAV & form open/close (tidak diubah banyak)
 const startDaily = document.getElementById("start");
 startDaily.addEventListener("click", () => {
-  const datas = document.querySelectorAll("tbody tr td .cell-link a, tbody tr td:nth-child(2) a");
-  datas.forEach(a => a.classList.add("reminder"));
+  const datas = document.querySelectorAll(".status-ok");
+datas.forEach(cell => {
+  cell.textContent = "❌";
+});
+
+
   saveData();
-  saveDataGalxe();
-  saveDataGuild();
 });
 
 const navLinks = document.querySelectorAll('.navbar .menu > a');
@@ -118,6 +121,13 @@ btnRandom.addEventListener("click", () => {
   }
   document.querySelector(".form").classList.add("active");
 });
+btnMonad.addEventListener("click", () => {
+  activeTable = "monad";
+  if (document.getElementById("addList").textContent === "Update") {
+    document.getElementById("addList").textContent = "Tambah";
+  }
+  document.querySelector(".form").classList.add("active");
+});
 close.addEventListener("click", () => {
   document.querySelector(".form").classList.remove("active");
   resetForm();
@@ -139,7 +149,6 @@ function resetForm() {
 // Tambah / Update
 btnAddList.addEventListener("click", () => {
   if (editingRow) {
-    // === MODE EDIT === (gunakan class selector)
     editingRow.querySelector(".cell-image img").src = input2.value || "";
     editingRow.querySelector(".name-text").textContent = input1.value || "";
     const linkEl = editingRow.querySelector(".cell-link a");
@@ -168,6 +177,7 @@ btnAddList.addEventListener("click", () => {
   } else {
     // === MODE ADD NEW ===
     let tr = document.createElement("tr");
+    tr.setAttribute("draggable", "true");
     const now = new Date();
     let hours = String(now.getHours()).padStart(2, "0");
     let minutes = String(now.getMinutes()).padStart(2, "0");
@@ -183,7 +193,7 @@ btnAddList.addEventListener("click", () => {
       <td class="cell-link"><a href="${input3.value || ''}" target="_blank"><i data-feather="external-link"></i></a></td>
       <td class="cell-twitter"><a href="${input4.value || ''}" target="_blank"><i data-feather="twitter"></i></a></td>
       <td class="cell-discord"><a href="${input5.value || ''}" target="_blank"><i data-feather="monitor"></i></a></td>
-      <td class="status-ok">✔</td>
+      <td class="status-ok">❌</td>
       <td class="cell-date">${input7.value || ''}</td>
       <td class="cell-stage"><span class="badge badge-mainnet">${input8.value || ''}</span></td>
       <td class="cell-type"><span class="badge badge-claim">${input9.value || ''}</span></td>
@@ -195,7 +205,8 @@ btnAddList.addEventListener("click", () => {
       galxe: tBodyGalxe,
       guild: tBodyGuild,
       waitlist: tBodyWaitlist,
-      random: tBodyRandom
+      random: tBodyRandom,
+      monad: tBodyMonad
     };
     const targetBody = targetMap[activeTable];
     if (!targetBody) {
@@ -208,10 +219,11 @@ btnAddList.addEventListener("click", () => {
     addEditEvent(tr);
     addLinkEvent(tr);
     addDeleteEvent(tr);
+    addDragEvent(tr);  
 
     feather.replace();
 
-    // simpan sesuai tabel
+    // save data
     if (activeTable === "galxe") {
       saveDataGalxe();
     }
@@ -224,6 +236,9 @@ btnAddList.addEventListener("click", () => {
      else if (activeTable === "random") {
       saveDataRandom();
     }
+     else if (activeTable === "monad") {
+      saveDataMonad();
+    }
      else {
       saveData();
     }
@@ -233,51 +248,104 @@ btnAddList.addEventListener("click", () => {
   document.querySelector(".form").classList.remove("active");
 });
 
-// === addLinkEvent: update last & simpan ===
-function addLinkEvent(row) {
-  row.querySelectorAll(".cell-link a").forEach(link => {
-    link.addEventListener("click", (e) => {
-      // jangan biarkan link membuka jika mau update last in same page? (tetap buka new tab)
-      const lastCell = row.querySelector(".cell-last");
 
-      // update last activity
-      const now = new Date();
-      let h = String(now.getHours()).padStart(2, "0");
-      let m = String(now.getMinutes()).padStart(2, "0");
-      let s = String(now.getSeconds()).padStart(2, "0");
-      const timeStr = `${now.getDate()}-${now.getMonth() + 1}-${now.getFullYear()} / ${h}:${m}:${s}`;
+let draggedRow = null;
 
-      lastCell.innerHTML = `
-        <span>${timeStr}</span>
-        <button class="btn-del"><i class="dell" data-feather="trash-2"></i></button>
-      `;
+function addDragEvent(row) {
+  row.addEventListener("dragstart", () => {
+    draggedRow = row;
+    row.classList.add("dragging");
+  });
 
-      // hapus class reminder dari link yg diklik
-      link.classList.remove("reminder");
+  row.addEventListener("dragend", () => {
+    row.classList.remove("dragging");
+    draggedRow = null;
 
-      // pasang ulang event delete karena kita mengganti innerHTML
-      const newDel = lastCell.querySelector(".btn-del");
-      if (newDel) addDeleteEvent(row);
+    // setelah selesai drag → save ulang
+    const container = getBodyContainingRow(row);
 
-      // simpan ke storage sesuai lokasi row
-      const container = getBodyContainingRow(row);
-      if (container === tBodyGalxe) {
-        saveDataGalxe();
-      } else if (container === tBodyGuild) {
-        saveDataGuild();
-      } else if (container === tBodyWaitlist) {
-        saveDataWaitlist();
-      }
-      else if(container === tBodyRandom){
-        saveDataRandom();
-      }
-      else {
-        saveData();
-      }
-      feather.replace();
-    });
+    if (container === tBodyGalxe) saveDataGalxe();
+    else if (container === tBodyGuild) saveDataGuild();
+    else if (container === tBodyWaitlist) saveDataWaitlist();
+    else if (container === tBodyRandom) saveDataRandom();
+    else if (container === tBodyMonad) saveDataMonad();
+    else saveData();
   });
 }
+
+function enableDragSort(tbody) {
+  if (!tbody) return;
+
+  tbody.addEventListener("dragover", (e) => {
+    e.preventDefault();
+
+    const afterElement = getDragAfterElement(tbody, e.clientY);
+    if (afterElement == null) {
+      tbody.appendChild(draggedRow);
+    } else {
+      tbody.insertBefore(draggedRow, afterElement);
+    }
+  });
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [...container.querySelectorAll("tr:not(.dragging)")];
+
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+
+// === addLinkEvent: update last & simpan ===
+function addLinkEvent(row) {
+  const link = row.querySelector(".cell-link a");
+  const statusCell = row.querySelector(".status-ok");
+
+  if (!link || !statusCell) return;
+
+  link.addEventListener("click", () => {
+
+    // ubah status jadi centang
+    statusCell.textContent = "✔";
+    statusCell.classList.remove("reminder");
+
+    // update last activity
+    const lastCell = row.querySelector(".cell-last");
+    const now = new Date();
+    let h = String(now.getHours()).padStart(2, "0");
+    let m = String(now.getMinutes()).padStart(2, "0");
+    let s = String(now.getSeconds()).padStart(2, "0");
+
+    const timeStr = `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()} / ${h}:${m}:${s}`;
+
+    lastCell.innerHTML = `
+      <span>${timeStr}</span>
+      <button class="btn-del"><i class="dell" data-feather="trash-2"></i></button>
+    `;
+
+    addDeleteEvent(row);
+    feather.replace();
+
+    // save ulang sesuai tabel
+    const container = getBodyContainingRow(row);
+
+    if (container === tBodyGalxe) saveDataGalxe();
+    else if (container === tBodyGuild) saveDataGuild();
+    else if (container === tBodyWaitlist) saveDataWaitlist();
+    else if (container === tBodyRandom) saveDataRandom();
+    else if (container === tBodyMonad) saveDataMonad();
+    else saveData();
+  });
+}
+
 
 // === addDeleteEvent: cari tbody via getBodyContainingRow ===
 function addDeleteEvent(row) {
@@ -313,6 +381,10 @@ function addDeleteEvent(row) {
     }else if (container === tBodyRandom) {
       saveDataRandom();
       loadDataRandom();
+    } 
+    else if (container === tBodyMonad) {
+      saveDataMonad();
+      loadDataMonad();
     } 
      else {
       saveData();
@@ -357,7 +429,7 @@ function saveData() {
       stage: tr.querySelector(".cell-stage span")?.textContent || "",
       type: tr.querySelector(".cell-type span")?.textContent || "",
       last: tr.querySelector(".cell-last span")?.textContent || "",
-      reminder: tr.querySelector(".cell-link a")?.classList.contains("reminder") || false
+      reminder: tr.querySelector(".status-ok")?.classList.contains("reminder") || false
     });
   });
   localStorage.setItem("airdrops", JSON.stringify(rows));
@@ -369,16 +441,19 @@ function loadData() {
   tBodyDashboard.innerHTML = "";
   rows.forEach(item => {
     let tr = document.createElement("tr");
+    tr.setAttribute("draggable", "true");
     tr.innerHTML = `
       <td class="cell-image">
         <img src="${item.image || ''}"> 
         <span class="name-text">${item.name || ''}</span>
         <button class="btn-edit"><i data-feather="edit"></i></button>
       </td>
-      <td class="cell-link"><a href="${item.link || ''}" target="_blank" class="${item.reminder ? 'reminder' : ''}"><i data-feather="external-link"></i></a></td>
+      <td class="cell-link"><a href="${item.link || ''}" target="_blank"><i data-feather="external-link"></i></a></td>
       <td class="cell-twitter"><a href="${item.twitter || ''}" target="_blank"><i data-feather="twitter"></i></a></td>
       <td class="cell-discord"><a href="${item.discord || ''}" target="_blank"><i data-feather="monitor"></i></a></td>
-      <td class="status-ok">✔</td>
+      <td class="status-ok ${item.reminder ? 'reminder' : ''}">
+  ${item.reminder ? '❌' : '✔'}
+</td>
       <td class="cell-date">${item.date || ''}</td>
       <td class="cell-stage"><span class="badge badge-mainnet">${item.stage || ''}</span></td>
       <td class="cell-type"><span class="badge badge-claim">${item.type || ''}</span></td>
@@ -388,6 +463,7 @@ function loadData() {
     addEditEvent(tr);
     addLinkEvent(tr);
     addDeleteEvent(tr);
+    addDragEvent(tr);  
   });
   feather.replace();
 }
@@ -419,6 +495,7 @@ function loadDataGalxe() {
   tBodyGalxe.innerHTML = "";
   rows.forEach(item => {
     let tr = document.createElement("tr");
+    tr.setAttribute("draggable", "true");
     tr.innerHTML = `
       <td class="cell-image">
         <img src="${item.image || ''}"> 
@@ -438,6 +515,7 @@ function loadDataGalxe() {
     addEditEvent(tr);
     addLinkEvent(tr);
     addDeleteEvent(tr);
+    addDragEvent(tr);  
   });
   feather.replace();
 }
@@ -469,6 +547,7 @@ function loadDataGuild() {
   tBodyGuild.innerHTML = "";
   rows.forEach(item => {
     let tr = document.createElement("tr");
+    tr.setAttribute("draggable", "true");
     tr.innerHTML = `
       <td class="cell-image">
         <img src="${item.image || ''}"> 
@@ -488,6 +567,7 @@ function loadDataGuild() {
     addEditEvent(tr);
     addLinkEvent(tr);
     addDeleteEvent(tr);
+    addDragEvent(tr);  
   });
   feather.replace();
 }
@@ -518,6 +598,7 @@ function loadDataWaitlist() {
   tBodyWaitlist.innerHTML = "";
   rows.forEach(item => {
     let tr = document.createElement("tr");
+    tr.setAttribute("draggable", "true");
     tr.innerHTML = `
       <td class="cell-image">
         <img src="${item.image || ''}"> 
@@ -537,6 +618,7 @@ function loadDataWaitlist() {
     addEditEvent(tr);
     addLinkEvent(tr);
     addDeleteEvent(tr);
+    addDragEvent(tr);  
   });
   feather.replace();
 }
@@ -567,6 +649,7 @@ function loadDataRandom() {
   tBodyRandom.innerHTML = "";
   rows.forEach(item => {
     let tr = document.createElement("tr");
+    tr.setAttribute("draggable", "true");
     tr.innerHTML = `
       <td class="cell-image">
         <img src="${item.image || ''}"> 
@@ -586,16 +669,79 @@ function loadDataRandom() {
     addEditEvent(tr);
     addLinkEvent(tr);
     addDeleteEvent(tr);
+    addDragEvent(tr);  
+  });
+  feather.replace();
+}
+// Eco Monad
+function saveDataMonad() {
+  let rows = [];
+  if (!tBodyMonad) return;
+  tBodyMonad.querySelectorAll("tr").forEach(tr => {
+    rows.push({
+      image: tr.querySelector(".cell-image img")?.src || "",
+      name: tr.querySelector(".name-text")?.textContent.trim() || "",
+      link: tr.querySelector(".cell-link a")?.href || "",
+      twitter: tr.querySelector(".cell-twitter a")?.href || "",
+      discord: tr.querySelector(".cell-discord a")?.href || "",
+      date: tr.querySelector(".cell-date")?.textContent || "",
+      stage: tr.querySelector(".cell-stage span")?.textContent || "",
+      type: tr.querySelector(".cell-type span")?.textContent || "",
+      last: tr.querySelector(".cell-last span")?.textContent || "",
+      reminder: tr.querySelector(".cell-link a")?.classList.contains("reminder") || false
+    });
+  });
+  localStorage.setItem("airdropsMonad", JSON.stringify(rows));
+  console.log("✅ Data Random disimpan:", rows);
+}
+function loadDataMonad() {
+  let rows = JSON.parse(localStorage.getItem("airdropsMonad") || "[]");
+  if (!tBodyMonad) return;
+  tBodyMonad.innerHTML = "";
+  rows.forEach(item => {
+    let tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="cell-image">
+        <img src="${item.image || ''}"> 
+        <span class="name-text">${item.name || ''}</span>
+        <button class="btn-edit"><i data-feather="edit"></i></button>
+      </td>
+      <td class="cell-link"><a href="${item.link || ''}" target="_blank" class="${item.reminder ? 'reminder' : ''}"><i data-feather="external-link"></i></a></td>
+      <td class="cell-twitter"><a href="${item.twitter || ''}" target="_blank"><i data-feather="twitter"></i></a></td>
+      <td class="cell-discord"><a href="${item.discord || ''}" target="_blank"><i data-feather="monitor"></i></a></td>
+      <td class="status-ok">✔</td>
+      <td class="cell-date">${item.date || ''}</td>
+      <td class="cell-stage"><span class="badge badge-mainnet">${item.stage || ''}</span></td>
+      <td class="cell-type"><span class="badge badge-claim">${item.type || ''}</span></td>
+      <td class="cell-last"><span>${item.last || ''}</span><button class="btn-del"><i class="dell" data-feather="trash-2"></i></button></td>
+    `;
+    tBodyMonad.appendChild(tr);
+    addEditEvent(tr);
+    addLinkEvent(tr);
+    addDeleteEvent(tr);
+    addEditEvent(tr);
+addDragEvent(tr);  
   });
   feather.replace();
 }
 
 // initial load
 window.addEventListener("DOMContentLoaded", () => {
+
+  
   loadData();
   loadDataGalxe();
   loadDataGuild();
   loadDataWaitlist();
   loadDataRandom();
+  loadDataMonad();
+
+  enableDragSort(tBodyDashboard);
+enableDragSort(tBodyGalxe);
+enableDragSort(tBodyGuild);
+enableDragSort(tBodyWaitlist);
+enableDragSort(tBodyRandom);
+enableDragSort(tBodyMonad);
+
+
 });
-// ===== END index.js (updated) =====
