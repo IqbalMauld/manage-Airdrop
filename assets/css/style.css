@@ -179,11 +179,24 @@ svg.feather{
   text-decoration: none;
 }
 .dashboard .reminder::after {
-  content: " ❗";
+  content: " ❌ ";
   font-size: 20px;
   color: red;
   font-weight: bold;
 }
+
+tr.dragging {
+  opacity: 0.5;
+}
+
+tbody tr {
+  cursor: grab;
+}
+
+tbody tr:active {
+  cursor: grabbing;
+}
+
 
 .dell span{
   margin-bottom: 10px;
@@ -224,7 +237,7 @@ svg.feather{
       color: #7b5cf5;
       text-decoration: none;
     }
-    #Add, #galxeAdd, #randomAdd, #guildAdd, #waitlistAdd{
+    #Add, #galxeAdd, #randomAdd, #guildAdd, #waitlistAdd, #randomNad{
       padding: 10px 15px;
       background: #2d4373;
       color: #9dc0ff;
